@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Service
-public class ElprisService {
+public class PowerpriceService {
 
     /*
     OBS!
@@ -28,12 +28,12 @@ public class ElprisService {
         String formattedDate = today.format(DateTimeFormatter.ofPattern("yyyy/MM-dd"));
 
         //return "https://www.elprisetjustnu.se/api/v1/prices/" + year + "/" + String.format("%02d", month) + "/" + String.format("%02d", day) + "_SE3.json";
-        return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate + "_SE3.json";
+        return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
-    public String getElpriser() {
+    public String getTodaysPrices(String region) {
         try {
-            String apiUrl = generateApiUrl();
+            String apiUrl = generateApiUrl() + "_SE" + region + ".json";
             RestTemplate restTemplate = new RestTemplate();
             String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
 
