@@ -25,9 +25,10 @@ public class ElprisService {
         int month = today.getMonthValue();
         int day = today.getDayOfMonth();
 
-        String formattedDate = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String formattedDate = today.format(DateTimeFormatter.ofPattern("yyyy/MM-dd"));
 
-        return "https://www.elprisetjustnu.se/api/v1/prices/" + year + "/" + String.format("%02d", month) + "/" + String.format("%02d", day) + "_SE3.json";
+        //return "https://www.elprisetjustnu.se/api/v1/prices/" + year + "/" + String.format("%02d", month) + "/" + String.format("%02d", day) + "_SE3.json";
+        return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate + "_SE3.json";
     }
 
     public String getElpriser() {
