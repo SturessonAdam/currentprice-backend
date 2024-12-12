@@ -2,6 +2,9 @@ package org.example.elprisappbackend.service;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class ElprisService {
 
@@ -14,9 +17,22 @@ public class ElprisService {
     Morgondagens elpris anländer tidigast kl 13 dagen innan.
     */
 
+    //Skapa en dynamisk URL med dagen datum
+    public String generateApiUrl() {
+        LocalDate today = LocalDate.now();
+
+        int year = today.getYear();
+        int month = today.getMonthValue();
+        int day = today.getDayOfMonth();
+
+        String formattedDate = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        return "https://www.elprisetjustnu.se/api/v1/prices/" + year + "/" + String.format("%02d", month) + "/" + String.format("%02d", day) + "_SE3.json";
+    }
+
     public String getElpriser() {
         try {
-            String apiUrl = "https://www.elprisetjustnu.se/api/v1/prices/2024/12-12_SE3.json";
+            String apiUrl = generateApiUrl();
             RestTemplate restTemplate = new RestTemplate();
             String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
 
