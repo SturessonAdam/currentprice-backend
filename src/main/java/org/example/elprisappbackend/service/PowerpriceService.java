@@ -1,4 +1,5 @@
 package org.example.elprisappbackend.service;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,5 +43,15 @@ public class PowerpriceService {
             e.printStackTrace();
             return "Error occurred";
         }
+    }
+
+    //Metod som ska hämta dagliga priserna automatiskt varje dag
+    @Scheduled(cron = "0 0 15 * * *") //Kör schemlagt vid 15 varje dag
+    public void fetchDailyPrices() {
+        String region = "3";
+        String prices = getTodaysPrices(region);
+        System.out.println(prices);
+
+        //Ska sparas till cache
     }
 }
