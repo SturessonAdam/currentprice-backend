@@ -6,8 +6,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 // TODO
-// Cacha elrpis data
-// Köra API anrop på schema basis för att hålla elrprisenra uppdaterade
 // Berabeta datan innan den skickas till fronten
 
 @SpringBootApplication
