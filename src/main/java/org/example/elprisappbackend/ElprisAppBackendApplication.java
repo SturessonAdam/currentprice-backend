@@ -2,6 +2,7 @@ package org.example.elprisappbackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 // TODO
@@ -11,6 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableCaching
 public class ElprisAppBackendApplication {
 
     public static void main(String[] args) {
