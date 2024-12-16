@@ -1,4 +1,7 @@
 package org.example.elprisappbackend.service;
+import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,6 +21,9 @@ public class PowerpriceService {
     Morgondagens elpris anländer tidigast kl 13 dagen innan.
     */
 
+    @Autowired
+    private ApplicationContext context;
+
     //Skapa en dynamisk URL med dagen datum
     public String generateApiUrl() {
         LocalDate today = LocalDate.now();
@@ -32,7 +38,9 @@ public class PowerpriceService {
         return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
+    @Cacheable("elpris-app-backend")
     public String getTodaysPrices(String region) {
+        System.out.println("Fetching data from external API...");
         try {
             String apiUrl = generateApiUrl() + "_SE" + region + ".json";
             RestTemplate restTemplate = new RestTemplate();
@@ -49,9 +57,7 @@ public class PowerpriceService {
     @Scheduled(cron = "0 0 15 * * *") //Kör schemlagt vid 15 varje dag
     public void fetchDailyPrices() {
         String region = "3";
-        String prices = getTodaysPrices(region);
-        System.out.println(prices);
-
-        //Ska sparas till cache
+        PowerpriceService proxy = context.getBean(PowerpriceService.class);
+        proxy.getTodaysPrices(region);
     }
 }
