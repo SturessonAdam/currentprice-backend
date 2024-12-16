@@ -7,6 +7,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 // TODO
 // Berabeta datan innan den skickas till fronten
+// Ta fram de 5 bästa timmarna på dygnet?
+// Nästa dags elpriser (efter kl 13)
+// Historisk data
 
 @SpringBootApplication
 @EnableScheduling
