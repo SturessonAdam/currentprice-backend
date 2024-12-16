@@ -56,8 +56,11 @@ public class PowerpriceService {
     //Metod som ska hämta dagliga priserna automatiskt varje dag
     @Scheduled(cron = "0 0 15 * * *") //Kör schemlagt vid 15 varje dag
     public void fetchDailyPrices() {
-        String region = "3";
         PowerpriceService proxy = context.getBean(PowerpriceService.class);
-        proxy.getTodaysPrices(region);
+
+        for(int region = 1; region <= 4; region++) { //hämtar från alla 4 regions
+            String regionString = String.valueOf(region);
+            proxy.getTodaysPrices(regionString);
+        }
     }
 }
