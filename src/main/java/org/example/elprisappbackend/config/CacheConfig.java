@@ -16,7 +16,7 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("elpris-app-backend");
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS) //Cachen håller i 1 timme
+                .expireAfterWrite(24, TimeUnit.HOURS) //Cachen håller i ett dygn
                 .maximumSize(100)); //Max antal objekt i cachen
         return cacheManager;
     }
