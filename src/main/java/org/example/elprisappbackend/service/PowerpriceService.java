@@ -38,6 +38,7 @@ public class PowerpriceService {
         return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
+    //Skapar en dynamisk URL för morgondagens priser
     public String generateApiUrlForTomorrow() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
