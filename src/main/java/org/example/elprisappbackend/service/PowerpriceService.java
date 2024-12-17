@@ -38,6 +38,13 @@ public class PowerpriceService {
         return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
+    public String generateApiUrlForTomorrow() {
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("yyyy/MM-dd"));
+        return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
+    }
+
     @Cacheable("elpris-app-backend")
     public String getTodaysPrices(String region) {
         System.out.println("Fetching data from external API...");
