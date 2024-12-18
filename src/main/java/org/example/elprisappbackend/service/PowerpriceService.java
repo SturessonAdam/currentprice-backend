@@ -61,6 +61,20 @@ public class PowerpriceService {
         }
     }
 
+    public String getTomorrowsPrices(String region) {
+        System.out.println("Fetching data from external API...");
+        try {
+            String apiUrl = generateApiUrlForTomorrow() + "_SE" + region + ".json";
+            RestTemplate restTemplate = new RestTemplate();
+            String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
+
+            return jsonResponse;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error occurred";
+        }
+    }
+
     //Metod som ska hämta dagliga priserna automatiskt varje dag
     @Scheduled(cron = "0 0 15 * * *") //Kör schemlagt vid 15 varje dag
     public void fetchDailyPrices() {
