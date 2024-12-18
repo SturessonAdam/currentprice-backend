@@ -28,13 +28,8 @@ public class PowerpriceService {
     public String generateApiUrl() {
         LocalDate today = LocalDate.now();
 
-        int year = today.getYear();
-        int month = today.getMonthValue();
-        int day = today.getDayOfMonth();
-
         String formattedDate = today.format(DateTimeFormatter.ofPattern("yyyy/MM-dd"));
 
-        //return "https://www.elprisetjustnu.se/api/v1/prices/" + year + "/" + String.format("%02d", month) + "/" + String.format("%02d", day) + "_SE3.json";
         return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
@@ -48,7 +43,7 @@ public class PowerpriceService {
 
     @Cacheable("elpris-app-backend")
     public String getTodaysPrices(String region) {
-        System.out.println("Fetching data from external API...");
+        System.out.println("Fetching today data from external API...");
         try {
             String apiUrl = generateApiUrl() + "_SE" + region + ".json";
             RestTemplate restTemplate = new RestTemplate();
@@ -63,7 +58,7 @@ public class PowerpriceService {
 
     //tomorrows prices will be avaliable at 13.00
     public String getTomorrowsPrices(String region) {
-        System.out.println("Fetching data from external API...");
+        System.out.println("Fetching tomorrows data from external API...");
         try {
             String apiUrl = generateApiUrlForTomorrow() + "_SE" + region + ".json";
             RestTemplate restTemplate = new RestTemplate();
