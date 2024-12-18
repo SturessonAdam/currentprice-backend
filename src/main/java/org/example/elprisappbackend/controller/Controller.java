@@ -16,4 +16,9 @@ public class Controller {
     public String getPrices(@RequestParam(value = "region", defaultValue = "3") String region) {
         return powerpriceService.getTodaysPrices(region);
     }
+
+    @GetMapping("/prices/tomorrow")
+    public String getTomorrowPrices(@RequestParam(value = "region", defaultValue = "3") String region) {
+        return powerpriceService.getTomorrowsPrices(region);
+    }
 }
