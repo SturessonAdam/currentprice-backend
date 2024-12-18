@@ -61,6 +61,7 @@ public class PowerpriceService {
         }
     }
 
+    //tomorrows prices will be avaliable at 13.00
     public String getTomorrowsPrices(String region) {
         System.out.println("Fetching data from external API...");
         try {
