@@ -6,7 +6,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 // TODO
-// Cache för morgondagens priser?
 // Ta fram de 5 bästa timmarna på dygnet?
 // Historisk data
 
