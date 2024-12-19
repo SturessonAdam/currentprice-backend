@@ -57,6 +57,7 @@ public class PowerpriceService {
     }
 
     //tomorrows prices will be avaliable at 13.00
+    @Cacheable("elpris-app-backend-tomorrow")
     public String getTomorrowsPrices(String region) {
         System.out.println("Fetching tomorrows data from external API...");
         try {

@@ -14,7 +14,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("elpris-app-backend");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("elpris-app-backend", "elpris-app-backend-tomorrow");
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(24, TimeUnit.HOURS) //Cachen håller i ett dygn
                 .maximumSize(100)); //Max antal objekt i cachen

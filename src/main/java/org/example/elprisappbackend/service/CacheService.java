@@ -15,4 +15,10 @@ public class CacheService {
         cacheManager.getCache("elpris-app-backend").clear();
         System.out.println("Cache cleared at midnight");
     }
+
+    @Scheduled(cron = "0 50 12 * * *") //Rensar cachen 12:50 varje dag
+    public void evictTomorrowsCache() {
+        cacheManager.getCache("elpris-app-backend-tomorrow").clear();
+        System.out.println("Cache with tomorrows prices cleared");
+    }
 }
