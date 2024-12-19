@@ -82,4 +82,14 @@ public class PowerpriceService {
             proxy.getTodaysPrices(regionString);
         }
     }
+
+    @Scheduled(cron = "0 0 13 * * *") //Körs 13:00 varje dag
+    public void fetchTomorrowsPrices() {
+        PowerpriceService proxy = context.getBean(PowerpriceService.class);
+
+        for(int region = 1; region <= 4; region++) { //hämtar från alla 4 regions
+            String regionString = String.valueOf(region);
+            proxy.getTomorrowsPrices(regionString);
+        }
+    }
 }
