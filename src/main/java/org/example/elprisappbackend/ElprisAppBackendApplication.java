@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 // Ta fram de 5 bästa timmarna på dygnet?
 // Historisk data
 // Bättre felhantering?
+// Tester?
 
 @SpringBootApplication
 @EnableScheduling
