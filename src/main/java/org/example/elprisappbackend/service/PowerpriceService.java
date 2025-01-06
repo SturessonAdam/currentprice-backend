@@ -47,9 +47,8 @@ public class PowerpriceService {
         try {
             String apiUrl = generateApiUrl() + "_SE" + region + ".json";
             RestTemplate restTemplate = new RestTemplate();
-            String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
 
-            return jsonResponse;
+            return restTemplate.getForObject(apiUrl, String.class);
         } catch (Exception e) {
             e.printStackTrace();
             return "Error occurred";
@@ -63,9 +62,8 @@ public class PowerpriceService {
         try {
             String apiUrl = generateApiUrlForTomorrow() + "_SE" + region + ".json";
             RestTemplate restTemplate = new RestTemplate();
-            String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
 
-            return jsonResponse;
+            return restTemplate.getForObject(apiUrl, String.class);
         } catch (Exception e) {
             e.printStackTrace();
             return "Error occurred";
