@@ -14,10 +14,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
-public class ElprisAppBackendApplication {
+public class CurrentPriceBackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ElprisAppBackendApplication.class, args);
+        SpringApplication.run(CurrentPriceBackendApplication.class, args);
     }
 
 }
