@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.example</groupId>
-    <artifactId>elpris-app-backend</artifactId>
+    <artifactId>currentprice-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>elpris-app-backend</name>
-    <description>elpris-app-backend</description>
+    <name>currentprice-backend</name>
+    <description>currentprice-backend</description>
     <url/>
     <licenses>
         <license/>
