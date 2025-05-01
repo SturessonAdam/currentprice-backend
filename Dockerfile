@@ -1,13 +1,18 @@
 # Byggbild
-FROM maven:3.9.6-eclipse-temurin-23 AS build
+FROM maven:3.8.6-openjdk-23 AS build
+
 WORKDIR /app
 COPY . .
+
+# Bygg projektet
 RUN mvn clean package -DskipTests
 
-# Runtime-bild
-FROM eclipse-temurin:23-jre
+# Kör-bild
+FROM eclipse-temurin:23-jdk AS runtime
+
 WORKDIR /app
-COPY --from=build /app/target/currentprice-backend-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/*.jar /app/app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+CMD ["java", "-jar", "/app/app.jar"]
