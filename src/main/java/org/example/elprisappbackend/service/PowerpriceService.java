@@ -1,4 +1,6 @@
 package org.example.elprisappbackend.service;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -8,6 +10,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class PowerpriceService {
@@ -88,6 +93,31 @@ public class PowerpriceService {
         for(int region = 1; region <= 4; region++) { //hämtar från alla 4 regions
             String regionString = String.valueOf(region);
             proxy.getTomorrowsPrices(regionString);
+        }
+    }
+
+    public String getFunFacts() {
+
+        List<Double> prices = fetchTodaysPricesAsList(region);
+        if (prices.isEmpty()) {
+            return "{}";
+        }
+        return;
+    }
+
+    //Hjälpmetod för hämta dagens priser som List<Double>
+    private List<Double> fetchTodaysPricesAsList(String region) {
+        String json = getTodaysPrices(region);
+        try {
+            JsonNode root = new ObjectMapper().readTree(json);
+            List<Double> list = new ArrayList<>();
+            for (JsonNode node : root) {
+                list.add(node.get("SEK_per_kWh").asDouble());
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
         }
     }
 }
