@@ -96,12 +96,19 @@ public class PowerpriceService {
         }
     }
 
-    public String getFunFacts() {
+    public String getFunFacts(String region) {
 
         List<Double> prices = fetchTodaysPricesAsList(region);
         if (prices.isEmpty()) {
             return "{}";
         }
+
+        double avgPrice = prices.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+
+
         return;
     }
 
