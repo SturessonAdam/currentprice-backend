@@ -23,4 +23,9 @@ public class Controller {
     public String getTomorrowPrices(@RequestParam(value = "region", defaultValue = "3") String region) {
         return powerpriceService.getTomorrowsPrices(region);
     }
+
+    @GetMapping("/funfacts")
+    public String getFunFacts(@RequestParam(value = "region", defaultValue = "3") String region) {
+        return powerpriceService.getFunFacts(region);
+    }
 }
