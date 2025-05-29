@@ -1,4 +1,5 @@
 package org.example.elprisappbackend.service;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.ApplicationContext;
@@ -10,9 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
 
 @Service
 public class PowerpriceService {
@@ -109,7 +109,29 @@ public class PowerpriceService {
                 .orElse(0.0);
 
 
-        return;
+        //förbrukningar
+        double evKwh = 60.0;
+        double heatPumpKwh = 20.0;
+        double showerKwh = 8.0 * (10.0/60.0);
+        double washerKwh = 1.0;
+        double dryerKwh = 2.5;
+        double dishwasherKwh = 1.5;
+
+        //beräkningar
+        Map<String, Double> costs = new LinkedHashMap<>();
+        costs.put("evChargeCost",        Math.round(evKwh * avgPrice * 100.0) / 100.0);
+        costs.put("heatPumpDayCost",     Math.round(heatPumpKwh * avgPrice * 100.0) / 100.0);
+        costs.put("showerCost",          Math.round(showerKwh * avgPrice * 100.0) / 100.0);
+        costs.put("washerCost",          Math.round(washerKwh * avgPrice * 100.0) / 100.0);
+        costs.put("dryerCost",           Math.round(dryerKwh * avgPrice * 100.0) / 100.0);
+        costs.put("dishwasherCost",      Math.round(dishwasherKwh * avgPrice * 100.0) / 100.0);
+
+        try {
+            return new ObjectMapper().writeValueAsString(costs);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{}";
+        }
     }
 
     //Hjälpmetod för hämta dagens priser som List<Double>
