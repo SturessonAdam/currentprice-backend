@@ -14,11 +14,28 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("elpris-app-backend", "elpris-app-backend-tomorrow");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(
+            "elpris-app-backend", 
+            "elpris-app-backend-tomorrow", 
+            "fun-facts-cache"
+        );
+        
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(24, TimeUnit.HOURS) //Cachen håller i ett dygn
-                .maximumSize(100)); //Max antal objekt i cachen
+                .expireAfterWrite(24, TimeUnit.HOURS)
+                .maximumSize(1000) // Increased cache size
+                .initialCapacity(100)
+                .recordStats()); // Enable statistics for monitoring
+
         return cacheManager;
+    }
+
+    @Bean
+    public Caffeine<Object, Object> caffeineConfig() {
+        return Caffeine.newBuilder()
+                .expireAfterWrite(24, TimeUnit.HOURS)
+                .maximumSize(1000)
+                .initialCapacity(100)
+                .recordStats();
     }
 }
 
