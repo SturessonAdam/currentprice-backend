@@ -1,152 +1,189 @@
 package org.example.elprisappbackend.service;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.context.ApplicationContext;
+import lombok.extern.slf4j.Slf4j;
+import org.example.elprisappbackend.model.FunFactsResponse;
+import org.example.elprisappbackend.model.PriceEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
-
+@Slf4j
 @Service
 public class PowerpriceService {
 
-    /*
-    OBS!
-    https://www.elprisetjustnu.se/elpris-api
-    GET https://www.elprisetjustnu.se/api/v1/prices/[ÅR]/[MÅNAD]-[DAG]_[PRISKLASS].json
-    Historisk data kan endast hämtas till och med 1. november 2022.
-    Alla priser är utan moms, tillägg och skatter.
-    Morgondagens elpris anländer tidigast kl 13 dagen innan.
-    */
-
+    private final WebClient webClient;
+    private final ObjectMapper objectMapper;
+    
+    // Energy consumption constants (kWh)
+    private static final double EV_KWH = 60.0;
+    private static final double HEAT_PUMP_KWH = 20.0;
+    private static final double SHOWER_KWH = 8.0 * (10.0/60.0);
+    private static final double WASHER_KWH = 1.0;
+    private static final double DRYER_KWH = 2.5;
+    private static final double DISHWASHER_KWH = 1.5;
+    
     @Autowired
-    private ApplicationContext context;
+    public PowerpriceService(WebClient webClient, ObjectMapper objectMapper) {
+        this.webClient = webClient;
+        this.objectMapper = objectMapper;
+    }
 
-    //Skapa en dynamisk URL med dagen datum
-    public String generateApiUrl() {
+    /**
+     * Generate API URL for today's prices
+     */
+    private String generateApiUrl() {
         LocalDate today = LocalDate.now();
-
         String formattedDate = today.format(DateTimeFormatter.ofPattern("yyyy/MM-dd"));
-
         return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
-    //Skapar en dynamisk URL för morgondagens priser
-    public String generateApiUrlForTomorrow() {
+    /**
+     * Generate API URL for tomorrow's prices
+     */
+    private String generateApiUrlForTomorrow() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
-
         String formattedDate = tomorrow.format(DateTimeFormatter.ofPattern("yyyy/MM-dd"));
         return "https://www.elprisetjustnu.se/api/v1/prices/" + formattedDate;
     }
 
-    @Cacheable("elpris-app-backend")
-    public String getTodaysPrices(String region) {
-        System.out.println("Fetching today data from external API...");
+    @Cacheable(value = "elpris-app-backend", key = "#region")
+    public List<PriceEntry> getTodaysPrices(String region) {
+        log.info("Fetching today's data from external API for region: {}", region);
         try {
             String apiUrl = generateApiUrl() + "_SE" + region + ".json";
-            RestTemplate restTemplate = new RestTemplate();
+            
+            String response = webClient.get()
+                    .uri(apiUrl)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
 
-            return restTemplate.getForObject(apiUrl, String.class);
+            return objectMapper.readValue(response, new TypeReference<List<PriceEntry>>() {});
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Error occurred";
+            log.error("Error fetching today's prices for region {}: {}", region, e.getMessage(), e);
+            return Collections.emptyList();
         }
     }
 
-    //tomorrows prices will be avaliable at 13.00
-    @Cacheable("elpris-app-backend-tomorrow")
-    public String getTomorrowsPrices(String region) {
-        System.out.println("Fetching tomorrows data from external API...");
+    @Cacheable(value = "elpris-app-backend-tomorrow", key = "#region")
+    public List<PriceEntry> getTomorrowsPrices(String region) {
+        log.info("Fetching tomorrow's data from external API for region: {}", region);
         try {
             String apiUrl = generateApiUrlForTomorrow() + "_SE" + region + ".json";
-            RestTemplate restTemplate = new RestTemplate();
+            
+            String response = webClient.get()
+                    .uri(apiUrl)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
 
-            return restTemplate.getForObject(apiUrl, String.class);
+            return objectMapper.readValue(response, new TypeReference<List<PriceEntry>>() {});
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Error occurred";
+            log.error("Error fetching tomorrow's prices for region {}: {}", region, e.getMessage(), e);
+            return Collections.emptyList();
         }
     }
 
-    //Metod som ska hämta dagliga priserna automatiskt varje dag
-    @Scheduled(cron = "0 0 15 * * *") //Kör schemlagt vid 15 varje dag
-    public void fetchDailyPrices() {
-        PowerpriceService proxy = context.getBean(PowerpriceService.class);
-
-        for(int region = 1; region <= 4; region++) { //hämtar från alla 4 regions
-            String regionString = String.valueOf(region);
-            proxy.getTodaysPrices(regionString);
-        }
-    }
-
-    @Scheduled(cron = "0 0 13 * * *") //Körs 13:00 varje dag
-    public void fetchTomorrowsPrices() {
-        PowerpriceService proxy = context.getBean(PowerpriceService.class);
-
-        for(int region = 1; region <= 4; region++) { //hämtar från alla 4 regions
-            String regionString = String.valueOf(region);
-            proxy.getTomorrowsPrices(regionString);
-        }
-    }
-
-    public String getFunFacts(String region) {
-
-        List<Double> prices = fetchTodaysPricesAsList(region);
+    @Cacheable(value = "fun-facts-cache", key = "#region")
+    public FunFactsResponse getFunFacts(String region) {
+        log.info("Calculating fun facts for region: {}", region);
+        
+        List<PriceEntry> prices = getTodaysPrices(region);
         if (prices.isEmpty()) {
-            return "{}";
+            return new FunFactsResponse();
         }
 
         double avgPrice = prices.stream()
-                .mapToDouble(Double::doubleValue)
+                .filter(Objects::nonNull)
+                .mapToDouble(PriceEntry::getSekPerKwh)
+                .filter(price -> !Double.isNaN(price))
                 .average()
                 .orElse(0.0);
 
-
-        //förbrukningar
-        double evKwh = 60.0;
-        double heatPumpKwh = 20.0;
-        double showerKwh = 8.0 * (10.0/60.0);
-        double washerKwh = 1.0;
-        double dryerKwh = 2.5;
-        double dishwasherKwh = 1.5;
-
-        //beräkningar
-        Map<String, Double> costs = new LinkedHashMap<>();
-        costs.put("evChargeCost",        Math.round(evKwh * avgPrice * 100.0) / 100.0);
-        costs.put("heatPumpDayCost",     Math.round(heatPumpKwh * avgPrice * 100.0) / 100.0);
-        costs.put("showerCost",          Math.round(showerKwh * avgPrice * 100.0) / 100.0);
-        costs.put("washerCost",          Math.round(washerKwh * avgPrice * 100.0) / 100.0);
-        costs.put("dryerCost",           Math.round(dryerKwh * avgPrice * 100.0) / 100.0);
-        costs.put("dishwasherCost",      Math.round(dishwasherKwh * avgPrice * 100.0) / 100.0);
-
-        try {
-            return new ObjectMapper().writeValueAsString(costs);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{}";
-        }
+        return new FunFactsResponse(
+                roundToTwoDecimals(EV_KWH * avgPrice),
+                roundToTwoDecimals(HEAT_PUMP_KWH * avgPrice),
+                roundToTwoDecimals(SHOWER_KWH * avgPrice),
+                roundToTwoDecimals(WASHER_KWH * avgPrice),
+                roundToTwoDecimals(DRYER_KWH * avgPrice),
+                roundToTwoDecimals(DISHWASHER_KWH * avgPrice)
+        );
     }
 
-    //Hjälpmetod för hämta dagens priser som List<Double>
-    private List<Double> fetchTodaysPricesAsList(String region) {
-        String json = getTodaysPrices(region);
+    /**
+     * Async method to fetch data for a single region
+     */
+    @Async
+    public CompletableFuture<Void> fetchPricesAsync(String region, boolean tomorrow) {
         try {
-            JsonNode root = new ObjectMapper().readTree(json);
-            List<Double> list = new ArrayList<>();
-            for (JsonNode node : root) {
-                list.add(node.get("SEK_per_kWh").asDouble());
+            if (tomorrow) {
+                getTomorrowsPrices(region);
+            } else {
+                getTodaysPrices(region);
             }
-            return list;
+            log.info("Successfully fetched {} prices for region {}", 
+                    tomorrow ? "tomorrow's" : "today's", region);
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
+            log.error("Failed to fetch {} prices for region {}: {}", 
+                    tomorrow ? "tomorrow's" : "today's", region, e.getMessage());
         }
+        return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Scheduled task to prefetch today's prices for all regions
+     */
+    @Scheduled(cron = "0 0 15 * * *") // Run at 15:00 every day
+    public void fetchDailyPricesForAllRegions() {
+        log.info("Starting scheduled fetch of daily prices for all regions");
+        
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (int region = 1; region <= 4; region++) {
+            String regionString = String.valueOf(region);
+            futures.add(fetchPricesAsync(regionString, false));
+        }
+        
+        // Wait for all async operations to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenRun(() -> log.info("Completed fetching daily prices for all regions"));
+    }
+
+    /**
+     * Scheduled task to prefetch tomorrow's prices for all regions
+     */
+    @Scheduled(cron = "0 0 13 * * *") // Run at 13:00 every day
+    public void fetchTomorrowsPricesForAllRegions() {
+        log.info("Starting scheduled fetch of tomorrow's prices for all regions");
+        
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (int region = 1; region <= 4; region++) {
+            String regionString = String.valueOf(region);
+            futures.add(fetchPricesAsync(regionString, true));
+        }
+        
+        // Wait for all async operations to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenRun(() -> log.info("Completed fetching tomorrow's prices for all regions"));
+    }
+
+    /**
+     * Utility method to round to two decimal places
+     */
+    private double roundToTwoDecimals(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
